@@ -1,5 +1,7 @@
 print("Hello World!")
 
-class list
+class checklist():
+    if __name__ == "__main__":
+        pass
 
 
