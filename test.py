@@ -20,7 +20,7 @@ frame.place(x=170, relwidth=0.03, relheight=1)
 frame = tk.Frame(root, bg="#208C81")
 frame.place(x=194, relwidth=1, relheight=0.08)
 
-#Højre del af UI (bunden)
+# Højre del af UI (bunden)
 frame = tk.Frame(root, bg="#404040")
 frame.place(x=194, y=64, relwidth=1, relheight=1)
 
