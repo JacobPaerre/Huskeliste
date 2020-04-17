@@ -4,9 +4,9 @@ import os
 class App():
     def __init__(self):
         self.root = tk.Tk()
-        self.root.geometry("500x500")
+        self.root.geometry("576x324")
         self.root.overrideredirect(0)
-        self.windowed = False
+        self.windowed = True
 
         # Bar til windowed mode og muligvis exit
         self.managementbar = tk.Frame(self.root, height=25, bg="#75A08D")
@@ -16,14 +16,14 @@ class App():
         self.windowbutton.pack(side=tk.RIGHT)
 
         # Venstre del af UI
-        self.sidebar = tk.Frame(self.root, padx=100, bg="#1D4147")
+        self.sidebar = tk.Frame(self.root, padx=60, bg="#1D4147")
         self.sidebar.pack(fill=tk.Y, side=tk.LEFT)
 
         self.logo = tk.Label(self.sidebar, text="Huskeliste", bg="#1D4147",fg="black", font=("Ubuntu, 24"),)
         self.logo.pack()
 
         # Split mellem højre og venstre
-        self.sidebarsplit = tk.Frame(self.root, width=50,bg="#227373")
+        self.sidebarsplit = tk.Frame(self.root, width=20,bg="#227373")
         self.sidebarsplit.pack(fill=tk.Y, side=tk.LEFT)
 
         # Højre del af UI (toppen)
