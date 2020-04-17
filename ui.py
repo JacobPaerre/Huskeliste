@@ -1,33 +1,50 @@
 import tkinter as tk
-from tkinter import *
 import os
 
-root = tk.Tk()
-root.resizable(0,0)
+class App():
+    def __init__(self):
+        self.root = tk.Tk()
+        self.root.geometry(str(self.root.winfo_screenwidth())+"x"+str(self.root.winfo_screenheight()))
+        self.root.overrideredirect(1)
+        self.windowed = False
 
-# Canvas
-canvas = tk.Canvas(root, height=800, width=800, bg="white")
-canvas.pack()
+        # Bar til windowed mode og muligvis exit
+        self.managementbar = tk.Frame(self.root, height=25, bg="#75A08D")
+        self.managementbar.pack(fill=tk.X, side=tk.TOP)
 
-# Venstre del af UI
-frame = tk.Frame(root, bg="#1D4147")
-frame.place(relwidth=.215, relheight=1)
+        self.windowbutton = tk.Button(self.managementbar, text="Toggle window", command=self.toggleWindow)
+        self.windowbutton.pack(side=tk.RIGHT)
 
-titel = tk.Label(frame, text="Huskeliste", bg="#1D4147",fg="black", font=("Ubuntu, 24"),)
-titel.pack()
+        # Venstre del af UI
+        self.sidebar = tk.Frame(self.root, padx=100, bg="#1D4147")
+        self.sidebar.pack(fill=tk.Y, side=tk.LEFT)
 
-# Split mellem højre og venstre
-frame = tk.Frame(root, bg="#227373")
-frame.place(x=170, relwidth=0.1, relheight=1)
+        self.logo = tk.Label(self.sidebar, text="Huskeliste", bg="#1D4147",fg="black", font=("Ubuntu, 24"),)
+        self.logo.pack()
 
-# Højre del af UI (toppen)
-frame = tk.Frame(root, bg="#208C81")
-frame.place(x=194, relwidth=1, relheight=0.08)
+        # Split mellem højre og venstre
+        self.sidebarsplit = tk.Frame(self.root, width=50,bg="#227373")
+        self.sidebarsplit.pack(fill=tk.Y, side=tk.LEFT)
 
-# Højre del af UI (bunden)
-frame = tk.Frame(root, bg="#404040")
-frame.place(x=194, y=64, relwidth=1, relheight=1)
+        # Højre del af UI (toppen)
+        self.topbar = tk.Frame(self.root, height=100, bg="#208C81")
+        self.topbar.pack(fill=tk.X, side=tk.TOP)
 
+        # Højre del af UI (bunden)
+        self.listdesk = tk.Frame(self.root, bg="#404040")
+        self.listdesk.pack(fill=tk.BOTH, side=tk.TOP, expand=True)
 
+    def toggleWindow(self):
+            if self.windowed:
+                self.windowed = False
+                self.root.geometry(str(self.root.winfo_screenwidth())+"x"+str(self.root.winfo_screenheight())+"+0+0")
+                self.root.overrideredirect(1)
+            else:
+                self.windowed = True
+                self.root.minsize(576, 324)
+                self.root.geometry("576x324")
+                self.root.overrideredirect(0)
+
+app = App()
 # Starter UI'en
-root.mainloop()
+app.root.mainloop()
