@@ -4,8 +4,8 @@ import os
 class App():
     def __init__(self):
         self.root = tk.Tk()
-        self.root.geometry(str(self.root.winfo_screenwidth())+"x"+str(self.root.winfo_screenheight()))
-        self.root.overrideredirect(1)
+        self.root.geometry("500x500")
+        self.root.overrideredirect(0)
         self.windowed = False
 
         # Bar til windowed mode og muligvis exit
