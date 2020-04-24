@@ -1,6 +1,9 @@
 import tkinter as tk
 import os
 
+# STYLES TIL GUI
+
+
 class App():
     def __init__(self):
         self.root = tk.Tk()
@@ -19,8 +22,11 @@ class App():
         self.sidebar = tk.Frame(self.root, padx=60, bg="#1D4147")
         self.sidebar.pack(fill=tk.Y, side=tk.LEFT)
 
-        self.logo = tk.Label(self.sidebar, text="Huskeliste", bg="#1D4147",fg="black", font=("Ubuntu, 24"),)
+        self.logo = tk.Label(self.sidebar, text="Huskeliste", bg="#1D4147",fg="white", font=("Ubuntu, 24"),)
         self.logo.pack()
+
+        self.addbutton = tk.Button(self.sidebar, text="+", command=self.addList, font=("Ubuntu 16 bold"), bg="#1D4147", bd=0)
+        self.addbutton.pack()
 
         # Split mellem højre og venstre
         self.sidebarsplit = tk.Frame(self.root, width=20,bg="#227373")
@@ -44,6 +50,11 @@ class App():
                 self.root.minsize(576, 324)
                 self.root.geometry("576x324")
                 self.root.overrideredirect(0)
+
+    def addList(self):
+        self.liste = tk.Button(self.sidebar, text="123", font=("Ubuntu", 12), fg="white", bg="#1D4147", bd=0)
+        self.liste.pack()
+
 
 app = App()
 # Starter UI'en
