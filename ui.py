@@ -51,7 +51,9 @@ class App():
                 self.root.geometry("576x324")
                 self.root.overrideredirect(0)
 
-    def addList(self, name="Untitled list"):
+    def addList(self):
+
+        name = "123"
 
         self.liste = tk.Button(self.sidebar, text=name, font=("Ubuntu", 14), fg="white", bg="#1D4147", bd=0)
         self.liste.pack()
