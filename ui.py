@@ -30,10 +30,10 @@ class App():
         self.sidebar = tk.Frame(self.root, padx=60, bg="#1D4147")
         self.sidebar.pack(fill=tk.Y, side=tk.LEFT)
 
-        self.logo = tk.Label(self.sidebar, text="Huskeliste", bg="#1D4147",fg="white", font=("Ubuntu, 24"),)
+        self.logo = tk.Label(self.sidebar, text="Huskeliste", bg="#1D4147",fg="white", font=("Ubuntu, 32"),)
         self.logo.pack()
 
-        self.addbutton = tk.Button(self.sidebar, text="+", command=self.addList, font=("Ubuntu 16 bold"), bg="#1D4147", bd=0)
+        self.addbutton = tk.Button(self.sidebar, text="Ny liste", command=self.addList, width="12", font=("Ubuntu 16"), bg="#208C81", bd=0, fg="white")
         self.addbutton.pack()
 
         self.listnavcontainer = tk.Frame(self.sidebar)
@@ -61,7 +61,10 @@ class App():
             self.root.geometry("576x324")
 
     def addList(self):
-        self.liste = tk.Button(self.listnavcontainer, text="123", font=("Ubuntu", 12), fg="white", bg="#1D4147", bd=0)
+
+        name = "123"
+
+        self.liste = tk.Button(self.sidebar, text=name, font=("Ubuntu", 14), fg="white", bg="#1D4147", bd=0)
         self.liste.pack()
 
     def StartMove(self, event):
