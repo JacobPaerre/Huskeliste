@@ -33,7 +33,7 @@ class App():
         self.logo = tk.Label(self.sidebar, text="Huskeliste", bg="#1D4147",fg="white", font=("Ubuntu, 32"),)
         self.logo.pack()
 
-        self.addbutton = tk.Button(self.sidebar, text="Ny liste", command=self.addList, width="12", font=("Ubuntu 16"), bg="#208C81", bd=0, fg="white")
+        self.addbutton = tk.Button(self.sidebar, text="Ny liste", command=self.openListAdd, width="12", font=("Ubuntu 16"), bg="#208C81", bd=0, fg="white")
         self.addbutton.pack()
 
         self.listnavcontainer = tk.Frame(self.sidebar)
@@ -60,12 +60,29 @@ class App():
             self.root.minsize(576, 324)
             self.root.geometry("576x324")
 
+    def openListAdd(self):
+
+        newlist = tk.Tk()
+        newlist.title("Create a new list")
+
+        tk.Label(newlist, text="List name:").grid(row=0)
+        tk.Label(newlist, text=" ").grid(row=1)
+
+        entrylistname = tk.StringVar(newlist)
+        entry1 = tk.Entry(newlist, textvariable = entrylistname)
+        tk.Button(newlist, text="Create list", command=self.addList).grid(row=1, column=1)
+
+        entry1.grid(row=0, column=1)
+        newlist.mainloop()
+
     def addList(self):
 
-        name = "123"
+        print(entrylistname.get()) # BRO ÆRLIGT MIT LORT VIRKER IKKE HELP
 
         self.liste = tk.Button(self.sidebar, text=name, font=("Ubuntu", 14), fg="white", bg="#1D4147", bd=0)
         self.liste.pack()
+
+        newlist.root.destroy
 
     def StartMove(self, event):
         self.x = event.x
