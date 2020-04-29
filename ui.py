@@ -63,6 +63,7 @@ class App():
     def openListAdd(self):
 
         self.newlist = tk.Tk()
+        self.newlist.geometry("200x50")
         self.newlist.title("Create a new list")
 
         tk.Label(self.newlist, text="List name:").grid(row=0)
