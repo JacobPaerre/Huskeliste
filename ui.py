@@ -62,27 +62,32 @@ class App():
 
     def openListAdd(self):
 
-        newlist = tk.Tk()
-        newlist.title("Create a new list")
+        self.newlist = tk.Tk()
+        self.newlist.title("Create a new list")
 
-        tk.Label(newlist, text="List name:").grid(row=0)
-        tk.Label(newlist, text=" ").grid(row=1)
+        tk.Label(self.newlist, text="List name:").grid(row=0)
+        tk.Label(self.newlist, text=" ").grid(row=1)
 
-        entrylistname = tk.StringVar(newlist)
-        entry1 = tk.Entry(newlist, textvariable = entrylistname)
-        tk.Button(newlist, text="Create list", command=self.addList).grid(row=1, column=1)
+        self.entrylistname = tk.StringVar(self.newlist)
+        entry1 = tk.Entry(self.newlist, textvariable = self.entrylistname)
+        tk.Button(self.newlist, text="Create list", command=self.addList).grid(row=1, column=1)
 
         entry1.grid(row=0, column=1)
-        newlist.mainloop()
 
     def addList(self):
 
-        print(entrylistname.get()) # BRO ÆRLIGT MIT LORT VIRKER IKKE HELP
+        name = self.entrylistname.get()
+
+        if name.isspace() == True:
+            name = "Untitled list"
+        if name == "":
+            name = "Untitled list"
 
         self.liste = tk.Button(self.sidebar, text=name, font=("Ubuntu", 14), fg="white", bg="#1D4147", bd=0)
+
         self.liste.pack()
 
-        newlist.root.destroy
+        self.newlist.destroy()
 
     def StartMove(self, event):
         self.x = event.x
