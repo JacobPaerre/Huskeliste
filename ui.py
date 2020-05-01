@@ -1,9 +1,28 @@
 import tkinter as tk
 import os
+import sqlite3
 
 # STYLES TIL GUI
 
 # Borderless window movement code from Bryan Oakley on stackoverflow: https://stackoverflow.com/a/4055612/13319955
+
+# DATABASE SETUP
+# conn = sqlite3.connect("./db/listDatabase.db")
+# c = conn.cursor()
+# c.execute("""CREATE TABLE lists (
+#         listindex integer,
+#         listtitle integer
+#         )
+#         """)
+# c.execute("""CREATE TABLE elements (
+#         listindex integer,
+#         elementindex integer,
+#         elementtitle text,
+#         elementcontent text
+#         )
+#         """)
+# conn.commit()
+# conn.close()
 
 class App():
     def __init__(self):
