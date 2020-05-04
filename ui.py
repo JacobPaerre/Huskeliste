@@ -52,7 +52,7 @@ class App():
         self.logo = tk.Label(self.sidebar, text="Huskeliste", bg="#1D4147",fg="white", font=("Ubuntu, 32"),)
         self.logo.pack()
 
-        self.addbutton = tk.Button(self.sidebar, text="Ny liste", command=self.addList, width="12", font=("Ubuntu 16"), bg="#208C81", bd=0, fg="white")
+        self.addbutton = tk.Button(self.sidebar, text="Ny liste", command=self.openListAdd, width="12", font=("Ubuntu 16"), bg="#208C81", bd=0, fg="white")
         self.addbutton.pack()
 
         self.listnavcontainer = tk.Frame(self.sidebar)
@@ -79,12 +79,35 @@ class App():
             self.root.minsize(576, 324)
             self.root.geometry("576x324")
 
+    def openListAdd(self):
+
+        self.newlist = tk.Tk()
+        self.newlist.geometry("200x50")
+        self.newlist.title("Create a new list")
+
+        tk.Label(self.newlist, text="List name:").grid(row=0)
+        tk.Label(self.newlist, text=" ").grid(row=1)
+
+        self.entrylistname = tk.StringVar(self.newlist)
+        entry1 = tk.Entry(self.newlist, textvariable = self.entrylistname)
+        tk.Button(self.newlist, text="Create list", command=self.addList).grid(row=1, column=1)
+
+        entry1.grid(row=0, column=1)
+
     def addList(self):
 
-        name = "123"
+        name = self.entrylistname.get()
+
+        if name.isspace() == True:
+            name = "Untitled list"
+        if name == "":
+            name = "Untitled list"
 
         self.liste = tk.Button(self.sidebar, text=name, font=("Ubuntu", 14), fg="white", bg="#1D4147", bd=0)
+
         self.liste.pack()
+
+        self.newlist.destroy()
 
     def StartMove(self, event):
         self.x = event.x
