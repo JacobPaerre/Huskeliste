@@ -1,6 +1,7 @@
 import tkinter as tk
 import os
 import sqlite3
+from string import Template
 
 # STYLES TIL GUI
 
@@ -10,19 +11,22 @@ import sqlite3
 # conn = sqlite3.connect("./db/listDatabase.db")
 # c = conn.cursor()
 # c.execute("""CREATE TABLE lists (
-#         listindex integer,
-#         listtitle integer
+#         id integer PRIMARY KEY,
+#         listTitle text
 #         )
 #         """)
 # c.execute("""CREATE TABLE elements (
-#         listindex integer,
-#         elementindex integer,
-#         elementtitle text,
-#         elementcontent text
+#         id integer PRIMARY KEY,
+#         listIndex integer,
+#         elementTitle text,
+#         elementContent text
 #         )
 #         """)
 # conn.commit()
 # conn.close()
+#
+# lists=[(id), listTitle]
+# elements=[(id), elementIndex, elementTitle, elementContent]
 
 class App():
     def __init__(self):
@@ -55,7 +59,7 @@ class App():
         self.addbutton = tk.Button(self.sidebar, text="Ny liste", command=self.openListAdd, width="12", font=("Ubuntu 16"), bg="#208C81", bd=0, fg="white")
         self.addbutton.pack()
 
-        self.listnavcontainer = tk.Frame(self.sidebar)
+        self.listnavcontainer = tk.Frame(self.sidebar, bg="#1D4147")
         self.listnavcontainer.pack()
 
         # Split mellem højre og venstre
@@ -94,6 +98,13 @@ class App():
 
         entry1.grid(row=0, column=1)
 
+    def addToDatabase(self, sqlCommand):
+        conn = sqlite3.connect("./db/listDatabase.db")
+        c = conn.cursor()
+        c.execute(sqlCommand)
+        conn.commit()
+        conn.close()
+
     def addList(self):
 
         name = self.entrylistname.get()
@@ -103,9 +114,10 @@ class App():
         if name == "":
             name = "Untitled list"
 
-        self.liste = tk.Button(self.sidebar, text=name, font=("Ubuntu", 14), fg="white", bg="#1D4147", bd=0)
-
+        self.liste = tk.Button(self.listnavcontainer, text=name, font=("Ubuntu", 14), fg="white", bg="#1D4147", bd=0)
         self.liste.pack()
+
+        self.addToDatabase(Template('INSERT INTO lists(listTitle) VALUES(\'$title\')').substitute(title=name))
 
         self.newlist.destroy()
 
