@@ -34,6 +34,7 @@ class App():
         self.root.geometry("576x324")
         self.root.overrideredirect(1)
         self.windowed = True
+        self.lists = []
 
         # Bar til windowed mode og muligvis exit
         self.managementbar = tk.Frame(self.root, height=25, bg="#75A08D")
@@ -74,6 +75,9 @@ class App():
         self.listdesk = tk.Frame(self.root, bg="#404040")
         self.listdesk.pack(fill=tk.BOTH, side=tk.TOP, expand=True)
 
+        # Load in lists from database
+        self.updateLists()
+
     def toggleWindow(self):
         if self.windowed:
             self.windowed = False
@@ -98,7 +102,7 @@ class App():
 
         entry1.grid(row=0, column=1)
 
-    def addToDatabase(self, sqlCommand):
+    def commandDatabase(self, sqlCommand):
         conn = sqlite3.connect("./db/listDatabase.db")
         c = conn.cursor()
         c.execute(sqlCommand)
@@ -114,10 +118,8 @@ class App():
         if name == "":
             name = "Untitled list"
 
-        self.liste = tk.Button(self.listnavcontainer, text=name, font=("Ubuntu", 14), fg="white", bg="#1D4147", bd=0)
-        self.liste.pack()
-
-        self.addToDatabase(Template('INSERT INTO lists(listTitle) VALUES(\'$title\')').substitute(title=name))
+        self.commandDatabase(Template('INSERT INTO lists(listTitle) VALUES(\'$title\')').substitute(title=name))
+        self.updateLists()
 
         self.newlist.destroy()
 
@@ -136,6 +138,33 @@ class App():
             x = self.root.winfo_x() + deltax
             y = self.root.winfo_y() + deltay
             self.root.geometry("+%s+%s" % (x, y))
+
+    def updateLists(self):
+        for l in self.lists:
+            l.destroy()
+        del self.lists[:]
+        conn = sqlite3.connect("./db/listDatabase.db")
+        c = conn.cursor()
+        c.execute('SELECT * FROM lists')
+        dblists = c.fetchall()
+        conn.close()
+        for l in dblists:
+            self.lists.append(List(self.listnavcontainer, l[0], l[1]))
+
+class List():
+    def __init__(self, master, listid, title="Untitled List"):
+        self.id = listid
+        self.title = title
+        
+        self.frame = tk.Frame(master)
+        self.frame.pack()
+
+        self.liste = tk.Button(self.frame, text=self.title, font=("Ubuntu", 14), fg="white", bg="#1D4147", bd=0)
+        self.liste.pack()
+    
+    def destroy(self):
+        self.liste.destroy()
+        self.frame.destroy()
 
 app = App()
 # Starter UI'en
