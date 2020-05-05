@@ -102,13 +102,6 @@ class App():
 
         entry1.grid(row=0, column=1)
 
-    def commandDatabase(self, sqlCommand):
-        conn = sqlite3.connect("./db/listDatabase.db")
-        c = conn.cursor()
-        c.execute(sqlCommand)
-        conn.commit()
-        conn.close()
-
     def addList(self):
 
         name = self.entrylistname.get()
@@ -118,7 +111,7 @@ class App():
         if name == "":
             name = "Untitled list"
 
-        self.commandDatabase(Template('INSERT INTO lists(listTitle) VALUES(\'$title\')').substitute(title=name))
+        commandDatabase(Template('INSERT INTO lists(listTitle) VALUES(\'$title\')').substitute(title=name))
         self.updateLists()
 
         self.newlist.destroy()
@@ -151,6 +144,13 @@ class App():
         for l in dblists:
             self.lists.append(List(self.listnavcontainer, l[0], l[1]))
 
+def commandDatabase(sqlCommand):
+    conn = sqlite3.connect("./db/listDatabase.db")
+    c = conn.cursor()
+    c.execute(sqlCommand)
+    conn.commit()
+    conn.close()
+
 class List():
     def __init__(self, master, listid, title="Untitled List"):
         self.id = listid
@@ -160,7 +160,14 @@ class List():
         self.frame.pack()
 
         self.liste = tk.Button(self.frame, text=self.title, font=("Ubuntu", 14), fg="white", bg="#1D4147", bd=0)
-        self.liste.pack()
+        self.liste.pack(side=tk.LEFT)
+
+        self.removeList = tk.Button(self.frame, command=self.removeListFromDatabase, text="X", font=("Ubuntu", 14), fg="white", bg="#1D4147", bd=0)
+        self.removeList.pack(side=tk.LEFT)
+
+    def removeListFromDatabase(self):
+        commandDatabase(Template('DELETE FROM lists WHERE id = $id').substitute(id=self.id))
+        app.updateLists()
     
     def destroy(self):
         self.liste.destroy()
