@@ -101,8 +101,11 @@ class App():
         tk.Button(self.newlist, text="Create list", command=self.addList).grid(row=1, column=1)
 
         entry1.grid(row=0, column=1)
+        entry1.bind('<Return>', self.addList)
+        entry1.focus_set()
+        self.newlist.focus_force()
 
-    def addList(self):
+    def addList(self, event=None):
 
         name = self.entrylistname.get()
 
@@ -163,7 +166,7 @@ class List():
         self.liste.pack(side=tk.LEFT)
 
         self.removeList = tk.Button(self.frame, command=self.removeListFromDatabase, text="X", font=("Ubuntu", 14), fg="white", bg="#1D4147", bd=0)
-        self.removeList.pack(side=tk.LEFT)
+        self.removeList.pack(side=tk.RIGHT)
 
     def removeListFromDatabase(self):
         commandDatabase(Template('DELETE FROM lists WHERE id = $id').substitute(id=self.id))
