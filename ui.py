@@ -1,7 +1,11 @@
-import tkinter as tk
+try:
+    import tkinter as tk
+    from tkinter import ttk
+except ImportError:
+    import Tkinter as tk
+    import ttk
 import os
 import sqlite3
-from string import Template
 
 # STYLES TIL GUI
 
@@ -28,30 +32,56 @@ from string import Template
 # lists=[(id), listTitle]
 # elements=[(id), elementIndex, elementTitle, elementContent]
 
-class App():
+class NewRoot(tk.Tk):
     def __init__(self):
-        self.root = tk.Tk()
-        self.root.geometry("576x324")
-        self.root.overrideredirect(1)
+        tk.Tk.__init__(self)
+        self.attributes('-alpha', 0.0)
+
+class App(tk.Toplevel):
+    def __init__(self, master):
+        tk.Toplevel.__init__(self, master)
+        # Borderless window initialization
         self.windowed = True
+        self.overrideredirect(1)
+        self.attributes('-topmost', 1)
+        self.windowSize = "400x400"
+        self.windowX = 0
+        self.windowY = 0
+        self.minsize(400,400)
+        self.geometry(self.windowSize)
+
+        # Database stuff
         self.lists = []
 
-        # Bar til windowed mode og muligvis exit
-        self.managementbar = tk.Frame(self.root, height=25, bg="#75A08D")
-        self.managementbar.pack(fill=tk.X, side=tk.TOP)
+        # Initialize widgets
+        self.createWidgets()
 
-        self.managementbar.bind("<ButtonPress-1>", self.StartMove)
-        self.managementbar.bind("<ButtonRelease-1>", self.StopMove)
-        self.managementbar.bind("<B1-Motion>", self.OnMotion)
+        # Load in lists from database
+        self.updateLists()
 
-        self.quitbutton = tk.Button(self.managementbar, text="Exit", command=self.root.destroy)
-        self.quitbutton.pack(side=tk.RIGHT)
+    # Initialize widgets
+    def createWidgets(self):
+        # Body
+        self.body = tk.Frame(self, bg="#75A08D")
+        self.body.pack(fill=tk.BOTH, expand=True)
 
-        self.windowbutton = tk.Button(self.managementbar, text="Toggle window", command=self.toggleWindow)
-        self.windowbutton.pack(side=tk.RIGHT)
+        # Topbar
+        self.topBar = tk.Frame(self.body, bg="#75A08D")
+        self.topBar.pack(side=tk.TOP, fill=tk.X)
+        self.topBar.bind("<ButtonPress-1>", self.start_move)
+        self.topBar.bind("<ButtonRelease-1>", self.stop_move)
+        self.topBar.bind("<B1-Motion>", self.do_move)
+
+        # Quit button
+        self.quitBtn = tk.Button(self.topBar, text="X", command=self.onClose)
+        self.quitBtn.pack(side=tk.RIGHT)
+
+        # Windowedmode button
+        self.windowedBtn = tk.Button(self.topBar, command=self.toggleWindowed, text="☐")
+        self.windowedBtn.pack(side=tk.RIGHT)
 
         # Venstre del af UI
-        self.sidebar = tk.Frame(self.root, padx=60, bg="#1D4147")
+        self.sidebar = tk.Frame(self.body, padx=60, bg="#1D4147")
         self.sidebar.pack(fill=tk.Y, side=tk.LEFT)
 
         self.logo = tk.Label(self.sidebar, text="Huskeliste", bg="#1D4147",fg="white", font=("Ubuntu, 32"),)
@@ -64,31 +94,69 @@ class App():
         self.listnavcontainer.pack()
 
         # Split mellem højre og venstre
-        self.sidebarsplit = tk.Frame(self.root, width=20,bg="#227373")
+        self.sidebarsplit = tk.Frame(self.body, width=20,bg="#227373")
         self.sidebarsplit.pack(fill=tk.Y, side=tk.LEFT)
 
         # Højre del af UI (toppen)
-        self.topbar = tk.Frame(self.root, height=100, bg="#208C81")
+        self.topbar = tk.Frame(self.body, height=100, bg="#208C81")
         self.topbar.pack(fill=tk.X, side=tk.TOP)
 
         # Højre del af UI (bunden)
-        self.listdesk = tk.Frame(self.root, bg="#404040")
+        self.listdesk = tk.Frame(self.body, bg="#404040")
         self.listdesk.pack(fill=tk.BOTH, side=tk.TOP, expand=True)
 
-        # Load in lists from database
-        self.updateLists()
+        # Resizing
+        self.resizer = ttk.Sizegrip(self)
+        self.resizer.place(relx=1.0, rely=1.0, anchor="se")
+        self.resizer.bind("<B1-Motion>", self.do_resize)
 
-    def toggleWindow(self):
+    # Closing app
+    def onClose(self, event=None):
+        self.master.destroy()
+
+    # Toggle windowed
+    def toggleWindowed(self):
         if self.windowed:
-            self.windowed = False
-            self.root.geometry(str(self.root.winfo_screenwidth())+"x"+str(self.root.winfo_screenheight())+"+0+0")
+            self.geometry("{0}x{1}+0+0".format(self.winfo_screenwidth(),self.winfo_screenheight()))
         else:
+            self.geometry(self.windowSize+"+{0}+{1}".format(self.windowX, self.windowY))
+        self.windowed = not self.windowed
+
+    # Moving window
+    def start_move(self, event):
+        if self.windowed:
+            self.x = event.x
+            self.y = event.y
+
+    def stop_move(self, event):
+        if self.windowed:
+            self.x = None
+            self.y = None
+
+    def do_move(self, event):
+        if self.windowed:
+            deltax = event.x - self.x
+            deltay = event.y - self.y
+            x = self.winfo_x() + deltax
+            y = self.winfo_y() + deltay
+            self.geometry(f"+{x}+{y}")
+            self.windowX = x
+            self.windowY = y
+
+    # Resizing window
+    def do_resize(self, event):
+        if not self.windowed:
             self.windowed = True
-            self.root.minsize(576, 324)
-            self.root.geometry("576x324")
+        x1 = self.winfo_pointerx()
+        y1 = self.winfo_pointery()
+        x0 = self.winfo_rootx()
+        y0 = self.winfo_rooty()
+        self.windowSize = "{0}x{1}".format(x1-x0,y1-y0)
+        self.geometry(self.windowSize)
+        return
 
+    # Open window for creating new list
     def openListAdd(self):
-
         self.newlist = tk.Tk()
         self.newlist.geometry("200x50")
         self.newlist.title("Create a new list")
@@ -105,6 +173,7 @@ class App():
         entry1.focus_set()
         self.newlist.focus_force()
 
+    # Add list to database and update displayed lists
     def addList(self, event=None):
 
         name = self.entrylistname.get()
@@ -114,27 +183,12 @@ class App():
         if name == "":
             name = "Untitled list"
 
-        commandDatabase(Template('INSERT INTO lists(listTitle) VALUES(\'$title\')').substitute(title=name))
+        commandDatabase('INSERT INTO lists(listTitle) VALUES(\'{0}\')'.format(name))
         self.updateLists()
 
         self.newlist.destroy()
 
-    def StartMove(self, event):
-        self.x = event.x
-        self.y = event.y
-
-    def StopMove(self, event):
-        self.x = None
-        self.y = None
-
-    def OnMotion(self, event):
-        if self.windowed:
-            deltax = event.x - self.x
-            deltay = event.y - self.y
-            x = self.root.winfo_x() + deltax
-            y = self.root.winfo_y() + deltay
-            self.root.geometry("+%s+%s" % (x, y))
-
+    # Update displayed lists
     def updateLists(self):
         for l in self.lists:
             l.destroy()
@@ -147,6 +201,7 @@ class App():
         for l in dblists:
             self.lists.append(List(self.listnavcontainer, l[0], l[1]))
 
+# Sqlite command for database
 def commandDatabase(sqlCommand):
     conn = sqlite3.connect("./db/listDatabase.db")
     c = conn.cursor()
@@ -154,6 +209,7 @@ def commandDatabase(sqlCommand):
     conn.commit()
     conn.close()
 
+# List class for lists loaded from database
 class List():
     def __init__(self, master, listid, title="Untitled List"):
         self.id = listid
@@ -168,14 +224,21 @@ class List():
         self.removeList = tk.Button(self.frame, command=self.removeListFromDatabase, text="X", font=("Ubuntu", 14), fg="white", bg="#1D4147", bd=0)
         self.removeList.pack(side=tk.RIGHT)
 
+    # Removes list from database (shocker)
     def removeListFromDatabase(self):
-        commandDatabase(Template('DELETE FROM lists WHERE id = $id').substitute(id=self.id))
+        commandDatabase('DELETE FROM lists WHERE id = {0}'.format(self.id))
         app.updateLists()
     
+    # Remove all widgets created by this object
     def destroy(self):
         self.liste.destroy()
         self.frame.destroy()
 
-app = App()
-# Starter UI'en
-app.root.mainloop()
+if __name__ == "__main__":
+    root = NewRoot()
+    root.lower()
+    root.iconify()
+    root.title("Application")
+
+    app = App(root)
+    app.mainloop()
