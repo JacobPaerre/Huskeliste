@@ -12,22 +12,22 @@ import sqlite3
 # Borderless window movement code from Bryan Oakley on stackoverflow: https://stackoverflow.com/a/4055612/13319955
 
 # DATABASE SETUP
-# conn = sqlite3.connect("./db/listDatabase.db")
-# c = conn.cursor()
-# c.execute("""CREATE TABLE lists (
-#         id integer PRIMARY KEY,
-#         listTitle text
-#         )
-#         """)
-# c.execute("""CREATE TABLE elements (
-#         id integer PRIMARY KEY,
-#         listIndex integer,
-#         elementTitle text,
-#         elementContent text
-#         )
-#         """)
-# conn.commit()
-# conn.close()
+conn = sqlite3.connect("./db/listDatabase.db")
+c = conn.cursor()
+c.execute("""CREATE TABLE lists (
+        id integer PRIMARY KEY,
+        listTitle text
+        )
+        """)
+c.execute("""CREATE TABLE elements (
+        id integer PRIMARY KEY,
+        listIndex integer,
+        elementTitle text,
+        elementContent text
+        )
+        """)
+conn.commit()
+conn.close()
 #
 # lists=[(id), listTitle]
 # elements=[(id), elementIndex, elementTitle, elementContent]
@@ -216,17 +216,19 @@ class List():
         self.id = listid
         self.title = title
         
-        self.frame = tk.Frame(master)
-        self.frame.pack()
+        self.frame = tk.Frame(master, bg="#1D4147")
+        self.frame.pack(fill=tk.X)
 
         self.liste = tk.Button(self.frame, text=self.title, font=("Ubuntu", 14), fg="white", bg="#1D4147", bd=0)
-        self.liste.pack(side=tk.LEFT)
+        self.liste.pack(side=tk.LEFT, expand=True)
         
-        self.editList = tk.Button(self.frame, command=self.openTitleEdit, text="Edit", font=("Ubuntu", 14), fg="white", bg="#1D4147", bd=0)
-        self.editList.pack(side=tk.RIGHT)
-
-        self.removeList = tk.Button(self.frame, command=self.removeListFromDatabase, text="X", font=("Ubuntu", 14), fg="white", bg="#1D4147", bd=0)
+        self.quitButtonImage = tk.PhotoImage(file="./res/quitIcon25Light.png")
+        self.removeList = tk.Button(self.frame, command=self.removeListFromDatabase, text="X", image=self.quitButtonImage, font=("Ubuntu", 14), fg="white", bg="#1D4147", bd=0)
         self.removeList.pack(side=tk.RIGHT)
+
+        self.editButtonImage = tk.PhotoImage(file="./res/editIcon25Green.png")
+        self.editList = tk.Button(self.frame, command=self.openTitleEdit, text="Edit", image=self.editButtonImage, font=("Ubuntu", 14), fg="white", bg="#1D4147", bd=0)
+        self.editList.pack(side=tk.RIGHT)
 
     def openTitleEdit(self):
         self.editList = tk.Tk()
