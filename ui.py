@@ -160,6 +160,7 @@ class App(tk.Toplevel):
         self.newlist = tk.Tk()
         self.newlist.geometry("200x50")
         self.newlist.title("Create a new list")
+        self.newlist.attributes('-topmost', 1)
 
         tk.Label(self.newlist, text="List name:").grid(row=0)
         tk.Label(self.newlist, text=" ").grid(row=1)
@@ -220,12 +221,48 @@ class List():
 
         self.liste = tk.Button(self.frame, text=self.title, font=("Ubuntu", 14), fg="white", bg="#1D4147", bd=0)
         self.liste.pack(side=tk.LEFT)
+        
+        self.editList = tk.Button(self.frame, command=self.openTitleEdit, text="Edit", font=("Ubuntu", 14), fg="white", bg="#1D4147", bd=0)
+        self.editList.pack(side=tk.RIGHT)
 
         self.removeList = tk.Button(self.frame, command=self.removeListFromDatabase, text="X", font=("Ubuntu", 14), fg="white", bg="#1D4147", bd=0)
         self.removeList.pack(side=tk.RIGHT)
 
+    def openTitleEdit(self):
+        self.editList = tk.Tk()
+        self.editList.geometry("200x50")
+        self.editList.title("Edit list name")
+        self.editList.attributes('-topmost', 1)
+
+        tk.Label(self.editList, text="List name:").grid(row=0)
+        tk.Label(self.editList, text=" ").grid(row=1)
+
+        self.entrylistname = tk.StringVar(self.editList)
+        entry1 = tk.Entry(self.editList, textvariable = self.entrylistname)
+        tk.Button(self.editList, text="Submit name", command=self.editListInDatabase).grid(row=1, column=1)
+
+        entry1.grid(row=0, column=1)
+        entry1.insert(0, self.title)
+        entry1.bind('<Return>', self.editListInDatabase)
+        entry1.focus_set()
+        self.editList.focus_force()
+
+    # Edit list title
+    def editListInDatabase(self, event=None):
+        name = self.entrylistname.get()
+
+        if name.isspace() == True:
+            name = "Untitled list"
+        if name == "":
+            name = "Untitled list"
+
+        commandDatabase("UPDATE lists SET listTitle = \'{0}\' WHERE id = {1}".format(name, self.id))
+        app.updateLists()
+
+        self.editList.destroy()
+
     # Removes list from database (shocker)
-    def removeListFromDatabase(self):
+    def removeListFromDatabase(self, event=None):
         commandDatabase('DELETE FROM lists WHERE id = {0}'.format(self.id))
         app.updateLists()
     
