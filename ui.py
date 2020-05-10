@@ -30,7 +30,7 @@ import sqlite3
 # conn.close()
 #
 # lists=[(id), listTitle]
-# elements=[(id), elementIndex, elementTitle, elementContent]
+# elements=[(id), listIndex, elementTitle, elementContent]
 
 class NewRoot(tk.Tk):
     def __init__(self):
@@ -44,7 +44,7 @@ class App(tk.Toplevel):
         self.windowed = True
         self.overrideredirect(1)
         self.attributes('-topmost', 1)
-        self.windowSize = "400x400"
+        self.windowSize = "600x400"
         self.windowX = 0
         self.windowY = 0
         self.minsize(400,400)
@@ -52,6 +52,8 @@ class App(tk.Toplevel):
 
         # Database stuff
         self.lists = []
+        self.listElements = []
+        self.openListId = -1
 
         # Initialize widgets
         self.createWidgets()
@@ -87,8 +89,8 @@ class App(tk.Toplevel):
         self.logo = tk.Label(self.sidebar, text="Huskeliste", bg="#1D4147",fg="white", font=("Ubuntu, 32"),)
         self.logo.pack()
 
-        self.addbutton = tk.Button(self.sidebar, text="Ny liste", command=self.openListAdd, width="12", font=("Ubuntu 16"), bg="#208C81", bd=0, fg="white")
-        self.addbutton.pack()
+        self.addlistbutton = tk.Button(self.sidebar, text="Ny liste", command=self.openListAdd, width="12", font=("Ubuntu 16"), bg="#208C81", bd=0, fg="white")
+        self.addlistbutton.pack(pady=20)
 
         self.listnavcontainer = tk.Frame(self.sidebar, bg="#1D4147")
         self.listnavcontainer.pack()
@@ -97,13 +99,16 @@ class App(tk.Toplevel):
         self.sidebarsplit = tk.Frame(self.body, width=20,bg="#227373")
         self.sidebarsplit.pack(fill=tk.Y, side=tk.LEFT)
 
-        # Højre del af UI (toppen)
-        self.topbar = tk.Frame(self.body, height=100, bg="#208C81")
-        self.topbar.pack(fill=tk.X, side=tk.TOP)
-
         # Højre del af UI (bunden)
-        self.listdesk = tk.Frame(self.body, bg="#404040")
-        self.listdesk.pack(fill=tk.BOTH, side=tk.TOP, expand=True)
+        self.elementdesk = tk.Frame(self.body, bg="#404040")
+        self.elementdesk.pack(fill=tk.BOTH, side=tk.TOP, expand=True)
+
+        self.addelementbutton = tk.Button(self.elementdesk, state=tk.DISABLED, text="Nyt punkt", command=self.openElementAdd, width="12", font=("Ubuntu 16"), bg="#208C81", bd=0, fg="white")
+        self.addelementbutton.pack(pady=20)
+
+        self.elementContainer = tk.Frame(self.elementdesk, bg="#404040")
+        self.elementContainer.pack(fill=tk.BOTH, side=tk.TOP, expand=True)
+
 
         # Resizing
         self.resizer = ttk.Sizegrip(self)
@@ -202,6 +207,63 @@ class App(tk.Toplevel):
         for l in dblists:
             self.lists.append(List(self.listnavcontainer, l[0], l[1]))
 
+    # Open window for creating new element
+    def openElementAdd(self):
+        self.newelement = tk.Tk()
+        self.newelement.geometry("200x130")
+        self.newelement.title("Create a new element")
+        self.newelement.attributes('-topmost', 1)
+
+        tk.Label(self.newelement, text="Element name:").grid(row=0)
+        tk.Label(self.newelement, text=" ").grid(row=1)
+
+        self.entryelementname = tk.StringVar(self.newelement)
+        entry1 = tk.Entry(self.newelement, textvariable = self.entryelementname)
+
+        tk.Label(self.newelement, text="Element notes:").grid(row=2)
+        tk.Label(self.newelement, text=" ").grid(row=3)
+
+        self.entryelementcontent = tk.StringVar(self.newelement)
+        entry2 = tk.Entry(self.newelement, textvariable = self.entryelementcontent)
+
+        tk.Button(self.newelement, text="Create element", command=self.addElement).grid(row=4, column=0, columnspan=2)
+
+        entry1.grid(row=0, column=1)
+        entry1.focus_set()
+
+        entry2.grid(row=2, column=1)
+        entry2.bind('<Return>', self.addElement)
+        self.newelement.focus_force()
+
+    # Add list to database and update displayed elements
+    def addElement(self, event=None):
+
+        name = self.entryelementname.get()
+        content = self.entryelementcontent.get()
+
+        if name.isspace() == True:
+            name = "Untitled element"
+        if name == "":
+            name = "Untitled element"
+
+        commandDatabase('INSERT INTO elements(listIndex, elementTitle, elementContent) VALUES(\'{0}\',\'{1}\',\'{2}\')'.format(self.openListId, name, content))
+        self.updateElements()
+
+        self.newelement.destroy()
+
+    # Update displayed elements
+    def updateElements(self):
+        for e in self.listElements:
+            e.destroy()
+        del self.listElements[:]
+        conn = sqlite3.connect("./db/listDatabase.db")
+        c = conn.cursor()
+        c.execute('SELECT * FROM elements WHERE listindex = {0}'.format(self.openListId))
+        dbelements = c.fetchall()
+        conn.close()
+        for e in dbelements:
+            self.listElements.append(ListElement(self.elementContainer, e[0], e[1], e[2], e[3]))
+
 # Sqlite command for database
 def commandDatabase(sqlCommand):
     conn = sqlite3.connect("./db/listDatabase.db")
@@ -216,10 +278,10 @@ class List():
         self.id = listid
         self.title = title
         
-        self.frame = tk.Frame(master, bg="#1D4147")
+        self.frame = tk.Frame(master, bg=master["bg"])
         self.frame.pack(fill=tk.X)
 
-        self.liste = tk.Button(self.frame, text=self.title, font=("Ubuntu", 14), fg="white", bg="#1D4147", bd=0)
+        self.liste = tk.Button(self.frame, command=self.showListElements, text=self.title, font=("Ubuntu", 14), fg="white", bg="#1D4147", bd=0)
         self.liste.pack(side=tk.LEFT, expand=True)
         
         self.quitButtonImage = tk.PhotoImage(file="./res/quitIcon25Light.png")
@@ -229,6 +291,14 @@ class List():
         self.editButtonImage = tk.PhotoImage(file="./res/editIcon25Green.png")
         self.editList = tk.Button(self.frame, command=self.openTitleEdit, text="Edit", image=self.editButtonImage, font=("Ubuntu", 14), fg="white", bg="#1D4147", bd=0)
         self.editList.pack(side=tk.RIGHT)
+
+    def showListElements(self, event=None):
+        for l in app.lists:
+            l.liste["bg"] = "#1D4147"
+        self.liste["bg"] = "#208C81"
+        app.openListId = self.id
+        app.addelementbutton["state"] = "normal"
+        app.updateElements()
 
     def openTitleEdit(self):
         self.editList = tk.Tk()
@@ -270,7 +340,89 @@ class List():
     
     # Remove all widgets created by this object
     def destroy(self):
+        app.openListId = -1
+        app.addelementbutton["state"] = "disabled"
         self.liste.destroy()
+        self.frame.destroy()
+
+
+
+# Element class for elements loaded from database
+class ListElement():
+    def __init__(self, master, elementid, listId, title="Untitled Element", elementContent=""):
+        self.id = elementid
+        self.listId = listId
+        self.title = title
+        self.elementContent = elementContent
+        
+        self.frame = tk.Frame(master, bg="#EEE")
+        self.frame.pack(fill=tk.X)
+
+        self.quitButtonImage = tk.PhotoImage(file="./res/quitIcon25Dark.png")
+        self.removeElement = tk.Button(self.frame, command=self.removeElementFromDatabase, text="X", image=self.quitButtonImage, font=("Ubuntu", 14), bg=self.frame["bg"], bd=0)
+        self.removeElement.pack(side=tk.RIGHT)
+
+        self.editButtonImage = tk.PhotoImage(file="./res/editIcon25Green.png")
+        self.editElementButton = tk.Button(self.frame, command=self.openElementEdit, text="Edit", image=self.editButtonImage, font=("Ubuntu", 14), bg=self.frame["bg"], bd=0)
+        self.editElementButton.pack(side=tk.RIGHT)
+
+        self.titleLabel = tk.Label(self.frame, text=self.title, font=("Ubuntu", 16))
+        self.titleLabel.pack(side=tk.TOP, fill=tk.X, expand=True)
+
+        self.contentLabel = tk.Label(self.frame, text=self.elementContent, font=("Ubuntu", 12))
+        self.contentLabel.pack(side=tk.TOP, fill=tk.X, expand=True)
+
+    def openElementEdit(self):
+        self.editElement = tk.Tk()
+        self.editElement.geometry("200x130")
+        self.editElement.title("Create a new element")
+        self.editElement.attributes('-topmost', 1)
+
+        tk.Label(self.editElement, text="Element name:").grid(row=0)
+        tk.Label(self.editElement, text=" ").grid(row=1)
+
+        self.entryelementname = tk.StringVar(self.editElement)
+        entry1 = tk.Entry(self.editElement, textvariable = self.entryelementname)
+
+        tk.Label(self.editElement, text="Element notes:").grid(row=2)
+        tk.Label(self.editElement, text=" ").grid(row=3)
+
+        self.entryelementcontent = tk.StringVar(self.editElement)
+        entry2 = tk.Entry(self.editElement, textvariable = self.entryelementcontent)
+
+        tk.Button(self.editElement, text="Create element", command=self.editElementInDatabase).grid(row=4, column=0, columnspan=2)
+
+        entry1.grid(row=0, column=1)
+        entry1.focus_set()
+
+        entry2.grid(row=2, column=1)
+        entry2.bind('<Return>', self.editElementInDatabase)
+        self.editElement.focus_force()
+
+    # Edit element
+    def editElementInDatabase(self, event=None):
+        name = self.entryelementname.get()
+        content = self.entryelementcontent.get()
+
+        if name.isspace() == True:
+            name = "Untitled element"
+        if name == "":
+            name = "Untitled element"
+
+        commandDatabase("UPDATE elements SET elementTitle = \'{0}\' WHERE id = {1}".format(name, self.id))
+        commandDatabase("UPDATE elements SET elementContent = \'{0}\' WHERE id = {1}".format(content, self.id))
+        app.updateElements()
+
+        self.editElement.destroy()
+
+    # Removes element from database (shocker)
+    def removeElementFromDatabase(self, event=None):
+        commandDatabase('DELETE FROM elements WHERE id = {0}'.format(self.id))
+        app.updateElements()
+    
+    # Remove all widgets created by this object
+    def destroy(self):
+        self.titleLabel.destroy()
         self.frame.destroy()
 
 if __name__ == "__main__":
