@@ -47,7 +47,7 @@ class App(tk.Toplevel):
         self.windowSize = "600x400"
         self.windowX = 0
         self.windowY = 0
-        self.minsize(400,400)
+        self.minsize(600,400)
         self.geometry(self.windowSize)
 
         # Database stuff
@@ -68,18 +68,20 @@ class App(tk.Toplevel):
         self.body.pack(fill=tk.BOTH, expand=True)
 
         # Topbar
-        self.topBar = tk.Frame(self.body, bg="#75A08D")
+        self.topBar = tk.Frame(self.body, bg="#75A89F")
         self.topBar.pack(side=tk.TOP, fill=tk.X)
         self.topBar.bind("<ButtonPress-1>", self.start_move)
         self.topBar.bind("<ButtonRelease-1>", self.stop_move)
         self.topBar.bind("<B1-Motion>", self.do_move)
 
         # Quit button
-        self.quitBtn = tk.Button(self.topBar, text="X", command=self.onClose)
+        self.quitButtonImage = tk.PhotoImage(file="./res/quitIcon25Light.png")
+        self.quitBtn = tk.Button(self.topBar, command=self.onClose, image=self.quitButtonImage, text="X", font=("Ubuntu", 14), fg="white", bg=self.topBar["bg"], bd=0)
         self.quitBtn.pack(side=tk.RIGHT)
 
         # Windowedmode button
-        self.windowedBtn = tk.Button(self.topBar, command=self.toggleWindowed, text="☐")
+        self.fullscreenButtonImage = tk.PhotoImage(file="./res/fullscreenIcon25Light.png")
+        self.windowedBtn = tk.Button(self.topBar, command=self.toggleWindowed, image=self.fullscreenButtonImage, text="☐", font=("Ubuntu", 14), fg="white", bg=self.topBar["bg"], bd=0)
         self.windowedBtn.pack(side=tk.RIGHT)
 
         # Venstre del af UI
@@ -87,7 +89,7 @@ class App(tk.Toplevel):
         self.sidebar.pack(fill=tk.Y, side=tk.LEFT)
 
         self.logo = tk.Label(self.sidebar, text="Huskeliste", bg="#1D4147",fg="white", font=("Ubuntu, 32"),)
-        self.logo.pack()
+        self.logo.pack(pady=25)
 
         self.addlistbutton = tk.Button(self.sidebar, text="Ny liste", command=self.openListAdd, width="12", font=("Ubuntu 16"), bg="#208C81", bd=0, fg="white")
         self.addlistbutton.pack(pady=20)
